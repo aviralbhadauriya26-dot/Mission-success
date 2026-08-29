@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mission Success</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0f0c">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mission Success">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0f0c;
+    --surface:#121712;
+    --surface-2:#181f18;
+    --border:#232b23;
+    --text:#e9efe8;
+    --text-muted:#7d8c7d;
+    --lvl0:#1a211a;
+    --lvl1:#1e5c37;
+    --lvl2:#39d97a;
+    --amber:#ffb454;
+    --danger:#e5636b;
+    --radius:10px;
+  }
+  html[data-theme="light"]{
+    --bg:#f5f7f4;
+    --surface:#ffffff;
+    --surface-2:#f0f3ef;
+    --border:#dde3dc;
+    --text:#141a14;
+    --text-muted:#6b756a;
+    --lvl0:#e6ebe4;
+    --lvl1:#3fae6c;
+    --lvl2:#1f9a52;
+    --amber:#c9760f;
+    --danger:#c93f47;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding:28px 16px 80px;
+    display:flex;
+    justify-content:center;
+    transition:background 0.2s, color 0.2s;
+  }
+  .app{ width:100%; max-width:760px; }
+
+  header{ margin-bottom:22px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .header-controls{ display:flex; gap:8px; flex-shrink:0; margin-top:2px; position:relative; }
+  .theme-toggle, .accent-toggle{
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    width:36px; height:36px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:9px;
+    color:var(--text);
+    cursor:pointer;
+    font-size:16px;
+  }
+  .theme-toggle:active, .accent-toggle:active{ transform:scale(0.94); }
+  .accent-toggle .swatch-dot{
+    width:16px; height:16px;
+    border-radius:50%;
+    background:var(--lvl2);
+    border:1px solid rgba(0,0,0,0.15);
+  }
+  .accent-popover{
+    position:absolute;
+    top:44px; right:0;
+    display:none;
+    gap:8px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.25);
+    z-index:20;
+  }
+  .accent-popover.open{ display:flex; }
+  .accent-swatch{
+    width:26px; height:26px;
+    border-radius:50%;
+    cursor:pointer;
+    border:2px solid transparent;
+    padding:0;
+  }
+  .accent-swatch.active{ border-color:var(--text); }
+  .accent-swatch:active{ transform:scale(0.9); }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--lvl2);
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:28px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .sub{ color:var(--text-muted); font-size:13.5px; margin-top:4px; }
+
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin:20px 0 24px;
+  }
+  .stat{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px 12px;
+  }
+  .stat .num{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:22px;
+    font-weight:700;
+    color:var(--lvl2);
+  }
+  .stat .lbl{ font-size:11px; color:var(--text-muted); margin-top:2px; text-transform:uppercase; letter-spacing:0.06em;}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px;
+    margin-bottom:18px;
+  }
+  .card h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:15px;
+    font-weight:600;
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .card h2 span.small{ font-size:11.5px; color:var(--text-muted); font-weight:500; font-family:'Inter',sans-serif; }
+
+  .add-row{ display:flex; gap:8px; margin-bottom:14px; }
+  .add-row input{
+    flex:1;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 12px;
+    color:var(--text);
+    font-size:14px;
+    outline:none;
+  }
+  .add-row input:focus{ border-color:var(--lvl2); }
+  .add-row button{
+    background:var(--lvl2);
+    color:#06170c;
+    border:none;
+    border-radius:8px;
+    padding:0 16px;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .add-row button:active{ transform:scale(0.97); }
+
+  .target-list{ display:flex; flex-direction:column; gap:8px; }
+  .target-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 12px;
+  }
+  .target-item.done{ border-color:var(--lvl2); background:rgba(57,217,122,0.08); }
+  .checkbox{
+    width:20px; height:20px;
+    border-radius:6px;
+    border:2px solid var(--text-muted);
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    transition:0.15s;
+  }
+  .checkbox.checked{ background:var(--lvl2); border-color:var(--lvl2); }
+  .checkbox.checked::after{ content:"✓"; color:#06170c; font-size:13px; font-weight:700; }
+  .target-name{ flex:1; font-size:14px; }
+  .target-item.done .target-name{ color:var(--text-muted); text-decoration:line-through; }
+  .del-btn{
+    background:none; border:none; color:var(--text-muted);
+    cursor:pointer; font-size:16px; padding:2px 6px;
+  }
+  .del-btn:hover{ color:var(--danger); }
+  .empty-note{ color:var(--text-muted); font-size:13.5px; padding:8px 2px; }
+
+  .today-progress{
+    height:6px;
+    background:var(--lvl0);
+    border-radius:3px;
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  .today-progress-fill{
+    height:100%;
+    background:var(--lvl2);
+    transition:width 0.25s;
+  }
+
+  .grid-scroll{ overflow-x:hidden; padding-bottom:2px; }
+  .year-grid-col{ flex:1; min-width:0; }
+  .month-labels{
+    display:grid;
+    grid-auto-flow:column;
+    grid-auto-columns:1fr;
+    gap:2px;
+    font-size:9px;
+    color:var(--text-muted);
+    margin-bottom:4px;
+  }
+  .weeks{
+    display:grid;
+    grid-auto-flow:column;
+    grid-auto-columns:1fr;
+    gap:2px;
+    width:100%;
+  }
+  .week-col{ display:grid; grid-template-rows:repeat(7, var(--cell-size, 12px)); gap:2px; }
+  #weeksGrid .day-cell{
+    width:100%;
+    height:var(--cell-size, 12px);
+    border-radius:2px;
+    cursor:default;
+  }
+  .day-cell{
+    width:12px; height:12px;
+    border-radius:3px;
+    background:var(--lvl0);
+    cursor:default;
+  }
+  .day-cell[data-lvl="1"]{ background:var(--lvl1); }
+  .day-cell[data-lvl="2"]{ background:var(--lvl2); box-shadow:0 0 6px rgba(57,217,122,0.35); }
+  .day-cell.today{ outline:1.5px solid var(--amber); outline-offset:1px; }
+  .day-cell.future{ opacity:0.35; }
+
+  .month-week-header{
+    display:flex; gap:6px; margin-left:70px; margin-bottom:8px;
+  }
+  .month-week-header span{ flex:1; text-align:center; font-size:10px; color:var(--text-muted); }
+  .month-weeks{ display:flex; flex-direction:column; gap:16px; }
+  .month-week-row{
+    display:flex; align-items:center; gap:10px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 14px;
+    box-shadow:0 1px 0 rgba(0,0,0,0.15);
+  }
+  .month-week-row.current-week{ border-color:var(--amber); }
+  .month-week-label{ width:60px; flex-shrink:0; font-size:11px; color:var(--text-muted); font-weight:600; }
+  .month-week-days{ display:flex; gap:6px; flex:1; width:100%; }
+  .month-week-days .day-cell{ flex:1; height:16px; width:auto; min-width:0; }
+  .weekday-labels{ display:grid; gap:2px; font-size:9px; color:var(--text-muted); margin-right:6px; margin-top:16px; flex-shrink:0;}
+  .weekday-labels div{ display:flex; align-items:center; }
+
+  .legend{ display:flex; align-items:center; gap:6px; justify-content:flex-end; margin-top:10px; font-size:11px; color:var(--text-muted); }
+  .legend .day-cell{ width:11px; height:11px; }
+
+  .tooltip{
+    font-size:12px;
+    color:var(--text-muted);
+    margin-top:8px;
+    min-height:16px;
+  }
+
+  .view-toggle{ display:flex; gap:4px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:3px; }
+  .view-toggle button{
+    background:none; border:none; color:var(--text-muted);
+    font-size:12px; font-weight:600; padding:5px 10px; border-radius:6px; cursor:pointer;
+  }
+  .view-toggle button.active{ background:var(--lvl2); color:#06170c; }
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <div class="eyebrow">daily contribution tracker</div>
+      <h1>Mission Success</h1>
+      <div class="sub">Set today's targets. Finish them all, light up the year.</div>
+    </div>
+    <div class="header-controls">
+      <button class="accent-toggle" id="accentToggle" aria-label="Choose color theme" title="Choose color theme">
+        <span class="swatch-dot" id="accentDot"></span>
+      </button>
+      <div class="accent-popover" id="accentPopover"></div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">🌙</button>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="statStreak">0</div><div class="lbl">Current streak</div></div>
+    <div class="stat"><div class="num" id="statFull">0</div><div class="lbl">Full days</div></div>
+    <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">Total done</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Today <span class="small" id="todayDateLbl"></span></h2>
+    <div class="today-progress"><div class="today-progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="add-row">
+      <input type="text" id="newTargetInput" placeholder="e.g. Workout, Read 20 pages, 2hr DSA..." maxlength="60"/>
+      <button id="addBtn">Add</button>
+    </div>
+    <div class="target-list" id="targetList"></div>
+    <div class="empty-note" id="emptyNote" style="display:none;">No targets yet — add your first one above.</div>
+  </div>
+
+  <div class="card">
+    <h2 id="yearHeading">
+      <span>Contributions</span>
+      <div class="view-toggle">
+        <button id="weekViewBtn" data-mode="week">Week</button>
+        <button id="yearViewBtn" data-mode="year" class="active">Year</button>
+      </div>
+    </h2>
+
+    <div class="sub" id="yearSub" style="margin-bottom:12px;"></div>
+
+    <div id="weekScroll" style="display:none;">
+      <div class="sub" id="weekMonthLabel" style="margin-bottom:10px;"></div>
+      <div class="month-week-header" id="weekDowHeader"></div>
+      <div class="month-weeks" id="weekWeeksGrid"></div>
+    </div>
+
+    <div class="grid-scroll" id="yearScroll">
+      <div style="display:flex; width:100%;">
+        <div class="weekday-labels"><div>Mon</div><div></div><div>Wed</div><div></div><div>Fri</div><div></div><div></div></div>
+        <div class="year-grid-col">
+          <div class="month-labels" id="monthLabels"></div>
+          <div class="weeks" id="weeksGrid"></div>
+        </div>
+      </div>
+    </div>
+    <div class="tooltip" id="cellTooltip">&nbsp;</div>
+    <div class="legend">
+      <span>Empty</span>
+      <div class="day-cell" data-lvl="0"></div>
+      <div class="day-cell" data-lvl="1"></div>
+      <div class="day-cell" data-lvl="2"></div>
+      <span>All done</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// Standalone local database — everything is saved on-device via localStorage,
+// namespaced so it never collides with other sites/apps.
+const APP_PREFIX = 'missionSuccess_';
+const storage = {
+  async get(key){
+    try{
+      const v = localStorage.getItem(APP_PREFIX + key);
+      return v === null ? null : { key, value: v };
+    }catch(e){ return null; }
+  },
+  async set(key, value){
+    localStorage.setItem(APP_PREFIX + key, value);
+    return { key, value };
+  }
+};
+
+let targets = [];
+let completions = {}; // { 'YYYY-MM-DD': [targetId, ...] }
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+async function loadData(){
+  try{
+    const t = await storage.get('targets');
+    targets = t ? JSON.parse(t.value) : [];
+  }catch(e){ targets = []; }
+  try{
+    const c = await storage.get('completions');
+    completions = c ? JSON.parse(c.value) : {};
+  }catch(e){ completions = {}; }
+}
+
+async function saveTargets(){
+  try{ await storage.set('targets', JSON.stringify(targets)); }catch(e){ console.error(e); }
+}
+async function saveCompletions(){
+  try{ await storage.set('completions', JSON.stringify(completions)); }catch(e){ console.error(e); }
+}
+
+function renderTodayLabel(){
+  const d = new Date();
+  document.getElementById('todayDateLbl').textContent = d.toLocaleDateString('en-US',{weekday:'short', month:'short', day:'numeric'});
+}
+
+function renderTargetList(){
+  const list = document.getElementById('targetList');
+  const empty = document.getElementById('emptyNote');
+  list.innerHTML = '';
+  if(targets.length === 0){ empty.style.display='block'; }
+  else{ empty.style.display='none'; }
+
+  const today = todayStr();
+  const doneToday = completions[today] || [];
+
+  targets.forEach(t=>{
+    const isDone = doneToday.includes(t.id);
+    const row = document.createElement('div');
+    row.className = 'target-item' + (isDone ? ' done' : '');
+    row.innerHTML = `
+      <div class="checkbox ${isDone?'checked':''}" data-id="${t.id}"></div>
+      <div class="target-name">${escapeHtml(t.name)}</div>
+      <button class="del-btn" data-id="${t.id}">✕</button>
+    `;
+    list.appendChild(row);
+  });
+
+  list.querySelectorAll('.checkbox').forEach(cb=>{
+    cb.addEventListener('click', ()=> toggleTarget(cb.dataset.id));
+  });
+  list.querySelectorAll('.del-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> deleteTarget(btn.dataset.id));
+  });
+
+  const pct = targets.length ? Math.round((doneToday.length/targets.length)*100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// Toggle stays cheap: grid rendering itself was optimized (fragment build +
+// one delegated hover listener), so a direct refresh here no longer causes lag.
+async function toggleTarget(id){
+  const today = todayStr();
+  if(!completions[today]) completions[today] = [];
+  const idx = completions[today].indexOf(id);
+  if(idx > -1) completions[today].splice(idx,1);
+  else completions[today].push(id);
+  await saveCompletions();
+  renderTargetList();
+  renderStats();
+  renderMonthGrid();
+}
+
+async function deleteTarget(id){
+  targets = targets.filter(t=>t.id !== id);
+  await saveTargets();
+  renderTargetList();
+  renderStats();
+  renderMonthGrid();
+}
+
+document.getElementById('addBtn').addEventListener('click', addTarget);
+document.getElementById('newTargetInput').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') addTarget();
+});
+async function addTarget(){
+  const input = document.getElementById('newTargetInput');
+  const name = input.value.trim();
+  if(!name) return;
+  targets.push({ id: 't_' + Date.now() + '_' + Math.floor(Math.random()*1000), name });
+  input.value = '';
+  await saveTargets();
+  renderTargetList();
+  renderStats();
+  renderMonthGrid();
+}
+
+function dayLevel(dateStr){
+  const done = (completions[dateStr] || []).length;
+  if(targets.length === 0 || done === 0) return 0;
+  if(done >= targets.length) return 2;
+  return 1;
+}
+
+function renderGrid(){
+  const year = new Date().getFullYear();
+
+  const start = new Date(year, 0, 1);
+  const end = new Date(year, 11, 31);
+  // align to Monday-start weeks
+  const startDow = (start.getDay() + 6) % 7; // 0=Mon
+  const gridStart = new Date(start);
+  gridStart.setDate(start.getDate() - startDow);
+
+  const weeksGrid = document.getElementById('weeksGrid');
+  const monthLabels = document.getElementById('monthLabels');
+  // Build off-DOM, then attach once — much cheaper than repeated live appends.
+  const weeksFrag = document.createDocumentFragment();
+  const monthFrag = document.createDocumentFragment();
+
+  const today = todayStr();
+  let cursor = new Date(gridStart);
+  let lastMonth = -1;
+  let totalContrib = 0;
+  let fullDays = 0;
+  let weekIndex = 0;
+
+  while(cursor <= end || cursor.getDay() !== 1){
+    if(cursor > end && cursor.getDay() === 1) break;
+    const col = document.createElement('div');
+    col.className = 'week-col';
+
+    const weekMonth = cursor.getMonth();
+    const lbl = document.createElement('div');
+    if(cursor.getFullYear() === year && weekMonth !== lastMonth && cursor.getDate() <= 7){
+      lbl.textContent = cursor.toLocaleDateString('en-US',{month:'short'});
+      lastMonth = weekMonth;
+    }
+    monthFrag.appendChild(lbl);
+
+    for(let i=0;i<7;i++){
+      const cell = document.createElement('div');
+      const dStr = cursor.getFullYear()+'-'+String(cursor.getMonth()+1).padStart(2,'0')+'-'+String(cursor.getDate()).padStart(2,'0');
+      const inYear = cursor.getFullYear() === year;
+      const isFuture = dStr > today;
+
+      if(inYear){
+        const lvl = isFuture ? 0 : dayLevel(dStr);
+        cell.className = 'day-cell' + (isFuture ? ' future' : '') + (dStr === today ? ' today' : '');
+        cell.setAttribute('data-lvl', lvl);
+        cell.setAttribute('data-date', dStr);
+        if(!isFuture){
+          const done = (completions[dStr]||[]).length;
+          totalContrib += done;
+          if(targets.length>0 && done >= targets.length && done>0) fullDays++;
+        }
+      } else {
+        cell.style.visibility = 'hidden';
+      }
+      col.appendChild(cell);
+      cursor.setDate(cursor.getDate()+1);
+    }
+    weeksFrag.appendChild(col);
+    weekIndex++;
+  }
+
+  weeksGrid.innerHTML = '';
+  monthLabels.innerHTML = '';
+  weeksGrid.appendChild(weeksFrag);
+  monthLabels.appendChild(monthFrag);
+
+  document.getElementById('yearSub').textContent = `${year} · ${totalContrib} contributions`;
+  return { totalContrib, fullDays };
+}
+
+// Cell size is computed from the container width and week-column count so the
+// whole year grid always fits exactly — no horizontal scroll/drag, no overlap.
+function syncGridCellSize(){
+  const col = document.querySelector('.year-grid-col');
+  const weeksGrid = document.getElementById('weeksGrid');
+  if(!col || !weeksGrid) return;
+  const weeksCount = weeksGrid.children.length;
+  if(weeksCount === 0) return;
+  const gap = 2;
+  const width = col.getBoundingClientRect().width;
+  const size = Math.max(4, Math.floor((width - gap * (weeksCount - 1)) / weeksCount));
+  document.documentElement.style.setProperty('--cell-size', size + 'px');
+  syncWeekdayLabelRows(size);
+}
+
+function syncWeekdayLabelRows(size){
+  const labels = document.querySelector('.weekday-labels');
+  if(!labels) return;
+  const h = size || document.querySelector('#weeksGrid .day-cell')?.getBoundingClientRect().height;
+  if(h > 0){
+    labels.style.gridTemplateRows = `repeat(7, ${h}px)`;
+  }
+}
+window.addEventListener('resize', ()=>{
+  clearTimeout(window._wgResizeT);
+  window._wgResizeT = setTimeout(syncGridCellSize, 150);
+});
+
+// Single delegated listener instead of one per cell — set up once.
+document.getElementById('weeksGrid').addEventListener('mouseover', e=>{
+  const cell = e.target.closest('.day-cell[data-date]');
+  if(!cell) return;
+  const dStr = cell.getAttribute('data-date');
+  const done = (completions[dStr]||[]).length;
+  document.getElementById('cellTooltip').textContent = `${dStr}: ${done}/${targets.length||0} targets completed`;
+});
+
+function renderMonthGrid(){
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = new Date(year, month + 1, 0);
+
+  const startDow = (monthStart.getDay() + 6) % 7; // 0=Mon
+  const gridStart = new Date(monthStart);
+  gridStart.setDate(monthStart.getDate() - startDow);
+  const endDow = (monthEnd.getDay() + 6) % 7;
+  const gridEnd = new Date(monthEnd);
+  gridEnd.setDate(monthEnd.getDate() + (6 - endDow));
+
+  const dowHeader = document.getElementById('weekDowHeader');
+  dowHeader.innerHTML = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<span>${d}</span>`).join('');
+  document.getElementById('weekMonthLabel').textContent = monthStart.toLocaleDateString('en-US',{month:'long', year:'numeric'});
+
+  const weeksEl = document.getElementById('weekWeeksGrid');
+  const frag = document.createDocumentFragment();
+
+  const today = todayStr();
+  let cursor = new Date(gridStart);
+  let weekNum = 1;
+
+  while(cursor <= gridEnd){
+    const row = document.createElement('div');
+    const isCurrentWeek = today >= (cursor.getFullYear()+'-'+String(cursor.getMonth()+1).padStart(2,'0')+'-'+String(cursor.getDate()).padStart(2,'0'))
+      && today <= (()=>{ const e=new Date(cursor); e.setDate(e.getDate()+6); return e.getFullYear()+'-'+String(e.getMonth()+1).padStart(2,'0')+'-'+String(e.getDate()).padStart(2,'0'); })();
+    row.className = 'month-week-row' + (isCurrentWeek ? ' current-week' : '');
+
+    const label = document.createElement('div');
+    label.className = 'month-week-label';
+    label.textContent = 'Week ' + weekNum;
+    row.appendChild(label);
+
+    const days = document.createElement('div');
+    days.className = 'month-week-days';
+
+    for(let i=0;i<7;i++){
+      const cell = document.createElement('div');
+      const dStr = cursor.getFullYear()+'-'+String(cursor.getMonth()+1).padStart(2,'0')+'-'+String(cursor.getDate()).padStart(2,'0');
+      const inMonth = cursor.getMonth() === month && cursor.getFullYear() === year;
+      const isFuture = dStr > today;
+
+      if(inMonth){
+        const lvl = isFuture ? 0 : dayLevel(dStr);
+        cell.className = 'day-cell' + (isFuture ? ' future' : '') + (dStr === today ? ' today' : '');
+        cell.setAttribute('data-lvl', lvl);
+        cell.setAttribute('data-date', dStr);
+      } else {
+        cell.className = 'day-cell';
+        cell.style.visibility = 'hidden';
+      }
+      days.appendChild(cell);
+      cursor.setDate(cursor.getDate()+1);
+    }
+    row.appendChild(days);
+    frag.appendChild(row);
+    weekNum++;
+  }
+
+  weeksEl.innerHTML = '';
+  weeksEl.appendChild(frag);
+}
+document.getElementById('weekWeeksGrid').addEventListener('mouseover', e=>{
+  const cell = e.target.closest('.day-cell[data-date]');
+  if(!cell) return;
+  const dStr = cell.getAttribute('data-date');
+  const done = (completions[dStr]||[]).length;
+  document.getElementById('cellTooltip').textContent = `${dStr}: ${done}/${targets.length||0} targets completed`;
+});
+
+let currentView = 'year';
+function setView(mode){
+  currentView = mode;
+  document.getElementById('weekScroll').style.display = mode==='week' ? 'block' : 'none';
+  document.getElementById('yearScroll').style.display = mode==='year' ? 'block' : 'none';
+  document.getElementById('weekViewBtn').classList.toggle('active', mode==='week');
+  document.getElementById('yearViewBtn').classList.toggle('active', mode==='year');
+  if(mode==='week') renderMonthGrid();
+  else syncGridCellSize();
+}
+document.getElementById('weekViewBtn').addEventListener('click', ()=> setView('week'));
+document.getElementById('yearViewBtn').addEventListener('click', ()=> setView('year'));
+
+function computeStreak(){
+  let streak = 0;
+  let d = new Date();
+  let dStr = todayStr();
+  // if today isn't a full day yet, start counting from yesterday
+  if(dayLevel(dStr) !== 2){
+    d.setDate(d.getDate()-1);
+  }
+  while(true){
+    const s = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(dayLevel(s) === 2){
+      streak++;
+      d.setDate(d.getDate()-1);
+    } else break;
+  }
+  return streak;
+}
+
+function renderStats(){
+  const { totalContrib, fullDays } = renderGrid();
+  document.getElementById('statStreak').textContent = computeStreak();
+  document.getElementById('statFull').textContent = fullDays;
+  document.getElementById('statTotal').textContent = totalContrib;
+}
+
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('themeToggle').textContent = theme === 'light' ? '☀️' : '🌙';
+}
+async function initTheme(){
+  let saved = null;
+  try{
+    const r = await storage.get('theme');
+    saved = r ? r.value : null;
+  }catch(e){ saved = null; }
+  applyTheme(saved === 'light' ? 'light' : 'dark');
+}
+document.getElementById('themeToggle').addEventListener('click', async ()=>{
+  const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  const next = current === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+  applyAccent(currentAccent);
+  try{ await storage.set('theme', next); }catch(e){ console.error(e); }
+});
+
+// Accent color themes: each swaps the --lvl1/--lvl2 accent (used by the grid,
+// checkboxes, progress bar, streak stat, buttons, eyebrow text) for dark & light modes.
+const ACCENT_THEMES = {
+  green:  { label:'Green',  dark:{lvl1:'#1e5c37', lvl2:'#39d97a'}, light:{lvl1:'#3fae6c', lvl2:'#1f9a52'} },
+  blue:   { label:'Blue',   dark:{lvl1:'#1d3f66', lvl2:'#4da3ff'}, light:{lvl1:'#5b93d6', lvl2:'#1f6fbf'} },
+  purple: { label:'Purple', dark:{lvl1:'#3a2a63', lvl2:'#b57bff'}, light:{lvl1:'#9a7bd6', lvl2:'#7c3fbf'} },
+  amber:  { label:'Amber',  dark:{lvl1:'#5c421e', lvl2:'#ffb454'}, light:{lvl1:'#d6a03f', lvl2:'#bf7c1f'} },
+  rose:   { label:'Rose',   dark:{lvl1:'#5c1e30', lvl2:'#ff6b8b'}, light:{lvl1:'#d6607a', lvl2:'#bf3f5c'} },
+};
+let currentAccent = 'green';
+
+function applyAccent(accentId){
+  const accent = ACCENT_THEMES[accentId] || ACCENT_THEMES.green;
+  currentAccent = ACCENT_THEMES[accentId] ? accentId : 'green';
+  const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  const colors = accent[theme];
+  document.documentElement.style.setProperty('--lvl1', colors.lvl1);
+  document.documentElement.style.setProperty('--lvl2', colors.lvl2);
+  document.getElementById('accentDot').style.background = colors.lvl2;
+  document.querySelectorAll('.accent-swatch').forEach(sw=>{
+    sw.classList.toggle('active', sw.dataset.accent === currentAccent);
+  });
+}
+
+function buildAccentPopover(){
+  const pop = document.getElementById('accentPopover');
+  pop.innerHTML = '';
+  Object.keys(ACCENT_THEMES).forEach(id=>{
+    const btn = document.createElement('button');
+    btn.className = 'accent-swatch';
+    btn.dataset.accent = id;
+    btn.title = ACCENT_THEMES[id].label;
+    btn.style.background = ACCENT_THEMES[id].dark.lvl2;
+    btn.addEventListener('click', async ()=>{
+      applyAccent(id);
+      document.getElementById('accentPopover').classList.remove('open');
+      try{ await storage.set('accentTheme', id); }catch(e){ console.error(e); }
+    });
+    pop.appendChild(btn);
+  });
+}
+
+async function initAccent(){
+  buildAccentPopover();
+  let saved = null;
+  try{
+    const r = await storage.get('accentTheme');
+    saved = r ? r.value : null;
+  }catch(e){ saved = null; }
+  applyAccent(saved && ACCENT_THEMES[saved] ? saved : 'green');
+}
+
+document.getElementById('accentToggle').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  document.getElementById('accentPopover').classList.toggle('open');
+});
+document.addEventListener('click', (e)=>{
+  const pop = document.getElementById('accentPopover');
+  if(!pop.contains(e.target) && e.target.id !== 'accentToggle'){
+    pop.classList.remove('open');
+  }
+});
+
+(async function init(){
+  await initTheme();
+  await initAccent();
+  renderTodayLabel();
+  await loadData();
+  renderTargetList();
+  renderStats();
+  renderMonthGrid();
+  syncGridCellSize();
+
+  // Auto-refresh when the calendar date rolls over — no reload needed.
+  let lastKnownDate = todayStr();
+  setInterval(()=>{
+    const cur = todayStr();
+    if(cur !== lastKnownDate){
+      lastKnownDate = cur;
+      renderTodayLabel();
+      renderTargetList();
+      renderStats();
+      renderMonthGrid();
+    }
+  }, 30000); // check every 30s — cheap, and catches midnight quickly
+})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(e=>console.error('SW registration failed', e));
+  });
+}
+</script>
+</body>
+</html>
